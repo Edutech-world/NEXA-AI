@@ -1,72 +1,91 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- CONFIGURATION DES IDENTIFIANTS (Mets tes codes ici) ---
-# Ton Client ID obtenu sur Google Cloud
-GOOGLE_CLIENT_ID = "TON_CLIENT_ID_ICI.apps.googleusercontent.com"
-# Ton API Key Gemini
-API_KEY = "AQ.Ab8RN6LHaSlLd8Djldm4mhAG1F8fZ-PivNM6UiYnMa_c0q9BwQ"
-
-genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
-
-# --- CONFIGURATION INTERFACE ---
+# --- CONFIGURATION DE LA PAGE ---
 st.set_page_config(page_title="NEXA Global Intelligence", layout="wide")
 
-# Design fidèle à tes images (1000086052.jpg)
+# --- STYLE CSS (Le look de ton projet) ---
 st.markdown("""
     <style>
     .stApp { background-color: #0d1117; color: #c9d1d9; }
+    
+    /* Barre de connexion Google en haut à droite */
+    .google-btn {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        background-color: #ffffff;
+        color: #000;
+        padding: 5px 15px;
+        border-radius: 5px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    
+    /* Style Sidebar */
     [data-testid="stSidebar"] { background-color: #161b22; border-right: 1px solid #30363d; }
-    .stButton>button { width: 100%; border-radius: 8px; background-color: #21262d; color: white; border: 1px solid #30363d; }
-    .premium-card { background: linear-gradient(135deg, #1e3a8a, #1e40af); padding: 15px; border-radius: 10px; border: 1px solid #3b82f6; }
+    
+    /* Barre de saisie personnalisée */
+    .input-container {
+        display: flex;
+        align-items: center;
+        background-color: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 20px;
+        padding: 5px 15px;
+    }
     </style>
+    <div class="google-btn">G Sign in with Google</div>
     """, unsafe_allow_html=True)
 
-# Navigation
-if "section" not in st.session_state:
-    st.session_state.section = "NEXA Brain"
+# --- ACTIVATION API GEMINI ---
+API_KEY = "AQ.Ab8RN6LHaSlLd8Djldm4mhAG1F8fZ-PivNM6UiYnMa_c0q9BwQ"
+genai.configure(api_key=API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
+# --- BARRE LATÉRALE (SIDEBAR) ---
 with st.sidebar:
     st.title("NEXA Global")
-    if st.button("🧠 NEXA Brain"): st.session_state.section = "NEXA Brain"
-    if st.button("🖼️ Images & 3D (Gratuit)"): st.session_state.section = "Free"
-    if st.button("🎬 Studio Premium (Payant)"): st.session_state.section = "Premium"
+    st.button("🧠 NEXA Brain")
+    st.button("🖼️ Generate Image")
+    st.button("📂 Media Library")
+    st.button("📺 NEXA TV")
     st.write("---")
-    st.markdown("👤 *Utilisateur : Guerrier Karl Alejandro*")
+    st.write("⚙️ Settings")
 
-# --- LOGIQUE DES PAGES ---
+# --- ZONE DE CHAT ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# 1. NEXA Brain (IA Textuelle)
-if st.session_state.section == "NEXA Brain":
-    st.subheader("🧠 NEXA Brain Intelligence")
-    # Logique de chat standard...
+for msg in st.session_state.messages:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
 
-# 2. Section GRATUITE (Images et Plans 3D)
-elif st.session_state.section == "Free":
-    st.subheader("🎨 Génération Gratuite")
-    mode = st.radio("Choisis ton outil :", ["Générateur d'Images", "Plan 3D (Ville/Pays)"])
+# --- BARRE DE SAISIE AVEC CAMÉRA ET VOIX ---
+# On utilise des colonnes pour l'alignement exact
+col_cam, col_text, col_voice = st.columns([1, 8, 1])
+
+with col_cam:
+    if st.button("📷"): # Bouton caméra à gauche
+        st.toast("Caméra activée")
+
+with col_text:
+    prompt = st.chat_input("Posez une question à NEXA...")
+
+with col_voice:
+    if st.button("🎤"): # Bouton voix à droite
+        st.toast("Microphone activé")
+
+# Logique de réponse
+if prompt:
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.write(prompt)
     
-    prompt = st.text_input("Que voulez-vous créer ?")
-    if st.button("Lancer la création gratuite"):
-        with st.spinner("NEXA travaille..."):
-            if mode == "Générateur d'Images":
-                st.info("Utilisation du modèle Nano Banana 2...")
-                # L'IA génère l'image ici
-            else:
-                st.success(f"Plan 3D de {prompt} en cours de rendu via Google Earth 3D...")
-
-# 3. Section PREMIUM (Vidéos, Musique, Films)
-elif st.session_state.section == "Premium":
-    st.subheader("💎 NEXA Studio Premium")
-    st.markdown("<div class='premium-card'>Générez des vidéos 4K, de la musique et des films comiques.</div>", unsafe_allow_html=True)
-    
-    media_type = st.selectbox("Type de média :", ["Film Comique", "Musique Originale (Lyria 3)", "Vidéo Cinématique (Veo)"])
-    details = st.text_area("Détails du script ou de l'ambiance :")
-    
-    col1, col2 = st.columns(2)
-    with col1:
-        st.write("💰 *Prix : 2.50$ USD*")
-    with col2:
-        if st.button("Payer avec MonCash/PayPal"):
-            st.warning("Redirection vers la passerelle sécurisée...")
+    with st.chat_message("assistant"):
+        try:
+            response = model.generate_content(prompt)
+            st.write(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+        except Exception:
+            st.error("Erreur : L'API Gemini n'est pas activée sur Google Cloud.")
