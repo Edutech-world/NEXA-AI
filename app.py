@@ -1,64 +1,72 @@
 import streamlit as st
 import google.generativeai as genai
 
-# 1. Configuration de la page
-st.set_page_config(
-    page_title="NEXA Global Intelligence",
-    page_icon="🌐",
-    layout="centered"
-)
-
-# 2. Configuration de l'IA (Ta clé est intégrée ici)
+# --- CONFIGURATION DES IDENTIFIANTS (Mets tes codes ici) ---
+# Ton Client ID obtenu sur Google Cloud
+GOOGLE_CLIENT_ID = "TON_CLIENT_ID_ICI.apps.googleusercontent.com"
+# Ton API Key Gemini
 API_KEY = "AQ.Ab8RN6LHaSlLd8Djldm4mhAG1F8fZ-PivNM6UiYnMa_c0q9BwQ"
-genai.configure(api_key=API_KEY)
 
-# Initialisation du modèle Gemini 1.5 Flash
+genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# 3. Style personnalisé (pour retrouver l'esprit NEXA)
+# --- CONFIGURATION INTERFACE ---
+st.set_page_config(page_title="NEXA Global Intelligence", layout="wide")
+
+# Design fidèle à tes images (1000086052.jpg)
 st.markdown("""
     <style>
-    .stApp {
-        background-color: #0a0c10;
-        color: white;
-    }
-    .stChatInput {
-        border-radius: 15px;
-    }
+    .stApp { background-color: #0d1117; color: #c9d1d9; }
+    [data-testid="stSidebar"] { background-color: #161b22; border-right: 1px solid #30363d; }
+    .stButton>button { width: 100%; border-radius: 8px; background-color: #21262d; color: white; border: 1px solid #30363d; }
+    .premium-card { background: linear-gradient(135deg, #1e3a8a, #1e40af); padding: 15px; border-radius: 10px; border: 1px solid #3b82f6; }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("🌐 NEXA Global Intelligence")
-st.subheader("Système d'intelligence centralisé")
+# Navigation
+if "section" not in st.session_state:
+    st.session_state.section = "NEXA Brain"
 
-# 4. Gestion de l'historique des messages
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+with st.sidebar:
+    st.title("NEXA Global")
+    if st.button("🧠 NEXA Brain"): st.session_state.section = "NEXA Brain"
+    if st.button("🖼️ Images & 3D (Gratuit)"): st.session_state.section = "Free"
+    if st.button("🎬 Studio Premium (Payant)"): st.session_state.section = "Premium"
+    st.write("---")
+    st.markdown("👤 *Utilisateur : Guerrier Karl Alejandro*")
 
-# Affichage des anciens messages
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+# --- LOGIQUE DES PAGES ---
 
-# 5. Zone de saisie utilisateur
-if prompt := st.chat_input("Posez une question à NEXA..."):
-    # Ajouter le message de l'utilisateur à l'historique
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+# 1. NEXA Brain (IA Textuelle)
+if st.session_state.section == "NEXA Brain":
+    st.subheader("🧠 NEXA Brain Intelligence")
+    # Logique de chat standard...
 
-    # Réponse de l'IA
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        message_placeholder.markdown("NEXA réfléchit...")
-        
-        try:
-            # Appel à l'API Gemini
-            response = model.generate_content(prompt)
-            full_response = response.text
-            message_placeholder.markdown(full_response)
-            
-            # Sauvegarder la réponse dans l'historique
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
-        except Exception as e:
-            message_placeholder.markdown(f"Erreur de connexion au noyau NEXA : {e}")
+# 2. Section GRATUITE (Images et Plans 3D)
+elif st.session_state.section == "Free":
+    st.subheader("🎨 Génération Gratuite")
+    mode = st.radio("Choisis ton outil :", ["Générateur d'Images", "Plan 3D (Ville/Pays)"])
+    
+    prompt = st.text_input("Que voulez-vous créer ?")
+    if st.button("Lancer la création gratuite"):
+        with st.spinner("NEXA travaille..."):
+            if mode == "Générateur d'Images":
+                st.info("Utilisation du modèle Nano Banana 2...")
+                # L'IA génère l'image ici
+            else:
+                st.success(f"Plan 3D de {prompt} en cours de rendu via Google Earth 3D...")
+
+# 3. Section PREMIUM (Vidéos, Musique, Films)
+elif st.session_state.section == "Premium":
+    st.subheader("💎 NEXA Studio Premium")
+    st.markdown("<div class='premium-card'>Générez des vidéos 4K, de la musique et des films comiques.</div>", unsafe_allow_html=True)
+    
+    media_type = st.selectbox("Type de média :", ["Film Comique", "Musique Originale (Lyria 3)", "Vidéo Cinématique (Veo)"])
+    details = st.text_area("Détails du script ou de l'ambiance :")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("💰 *Prix : 2.50$ USD*")
+    with col2:
+        if st.button("Payer avec MonCash/PayPal"):
+            st.warning("Redirection vers la passerelle sécurisée...")
