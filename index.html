@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/manifest.json">
+    <title>NEXA Global Intelligence</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">NEXA</div>
+            <nav>
+                <button onclick="changeTab('brain')">NEXA Brain</button>
+                <button onclick="changeTab('generate')">Generate</button>
+                <button onclick="changeTab('media')">Media Library</button>
+                <button onclick="changeTab('market')">Marketplace</button>
+            </nav>
+        </aside>
+
+        <main id="main-content">
+            <div id="display-area">
+                <h1>Bienvenue sur NEXA</h1>
+                <p>Sélectionnez une option pour commencer.</p>
+            </div>
+            
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Posez une question à NEXA...">
+                <button id="send-btn">Envoyer</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
